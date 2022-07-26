@@ -1,0 +1,38 @@
+From 3bc1119d8a5d5c79f5c0531ec89d38e7294b16e3 Mon Sep 17 00:00:00 2001
+From: Li Jinlin <lijinlin3@huawei.com>
+Date: Wed, 27 Apr 2022 10:40:57 +0800
+Subject: [PATCH] use share timeslice policy
+
+---
+ drivers/gpu/drm/i915/gvt/sched_policy.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/gvt/sched_policy.c b/drivers/gpu/drm/i915/gvt/sched_policy.c
+index c077fb4674f0..33b5cb6e15dd 100644
+--- a/drivers/gpu/drm/i915/gvt/sched_policy.c
++++ b/drivers/gpu/drm/i915/gvt/sched_policy.c
+@@ -101,18 +101,14 @@ static void gvt_balance_timeslice(struct gvt_sched_data *sched_data)
+ 	 * allocated again without adding previous debt.
+ 	 */
+ 	if (stage == 0) {
+-		int total_weight = 0;
++		int total_weight = 100;
++		int vgpu_weight = 95;
+ 		ktime_t fair_timeslice;
+ 
+-		list_for_each(pos, &sched_data->lru_runq_head) {
+-			vgpu_data = container_of(pos, struct vgpu_sched_data, lru_list);
+-			total_weight += vgpu_data->sched_ctl.weight;
+-		}
+-
+ 		list_for_each(pos, &sched_data->lru_runq_head) {
+ 			vgpu_data = container_of(pos, struct vgpu_sched_data, lru_list);
+ 			fair_timeslice = ktime_divns(ms_to_ktime(GVT_TS_BALANCE_PERIOD_MS),
+-						     total_weight) * vgpu_data->sched_ctl.weight;
++						     total_weight) * vgpu_weight;
+ 
+ 			vgpu_data->allocated_ts = fair_timeslice;
+ 			vgpu_data->left_ts = vgpu_data->allocated_ts;
+-- 
+2.30.2
+
